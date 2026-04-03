@@ -439,9 +439,9 @@
           "schemaRef": null
         },
         {
-          "name": "alias",
+          "name": "let",
           "type": "string",
-          "description": "",
+          "description": "Name for the current item inside the loop.\n\nDefines the variable name used to reference each item in the template.\nDefaults to `\"e\"` if not specified.",
           "schemaRef": null
         },
         {
