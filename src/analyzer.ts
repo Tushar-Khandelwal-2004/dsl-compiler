@@ -39,7 +39,8 @@ export function analyze(nodes: ParsedNode[], schemaMap: Map<string, ComponentSch
         });
         continue;
       }
-      const rawValue = node.attributes[attrName];
+
+      let rawValue = node.attributes[attrName];
       let inferredType = 'string';
       let isExpression = false;
 
@@ -55,12 +56,20 @@ export function analyze(nodes: ParsedNode[], schemaMap: Map<string, ComponentSch
         }
       }
 
-      if (!isExpression && inputSchema.type !== 'any' && inferredType !== inputSchema.type) {
-        diagnostics.push({
-          severity: 'error',
-          message: `Type mismatch on '${node.tagName}' input '${attrName}': expected ${inputSchema.type}, got ${inferredType}`,
-          line: node.line
-        });
+      if (!isExpression && inputSchema.type) {
+        const allowedTypes = inputSchema.type.replace(/['"]/g, '').split('|').map(s => s.trim());
+
+        const isValidType = allowedTypes.includes('any') || 
+                            allowedTypes.includes(inferredType) || 
+                            allowedTypes.includes(rawValue);
+
+        if (!isValidType) {
+          diagnostics.push({
+            severity: 'error',
+            message: `Type mismatch on '${node.tagName}' input '${attrName}': expected ${inputSchema.type}, got ${inferredType}`,
+            line: node.line
+          });
+        }
       }
     }
   }

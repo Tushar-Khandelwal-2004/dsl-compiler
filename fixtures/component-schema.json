@@ -1,0 +1,1073 @@
+{
+  "components": [
+    {
+      "component": "back-button-1",
+      "description": "A simple back button that points to the previous page.\n```\n<back-button-1 />\n```",
+      "inputs": [
+        {
+          "name": "fallbackUrl",
+          "type": "any",
+          "description": "",
+          "schemaRef": null
+        },
+        {
+          "name": "label",
+          "type": "any",
+          "description": "",
+          "schemaRef": null
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "component": "boolean-filter-1",
+      "description": "Generic boolean/toggle filter for product listings.",
+      "inputs": [
+        {
+          "name": "fieldPath",
+          "type": "string",
+          "description": "Dot-notated field path, for example `customFields.inStock`.",
+          "schemaRef": null
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "description": "Label displayed beside the toggle.",
+          "schemaRef": null
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Optional initial state of the toggle.",
+          "schemaRef": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "changed",
+          "type": "ProductListFilter[]",
+          "description": "Emits API-ready filters whenever the toggle state changes.",
+          "schemaRef": "ProductListFilter"
+        }
+      ]
+    },
+    {
+      "component": "my-cart-1",
+      "description": "DSL cart component used by the webshop storefront.\n\nResponsibilities:\n- Reads persisted items from cart storage.\n- Resolves product and choice metadata through shop-svc APIs.\n- Keeps the browser cart storage in sync with quantity/remove updates.\n- Emits analytics (`view_cart`) and local message-bus events (`cart:remove`).\n\nNotes for DSL usage:\n- Route-level component (renders cart page content and sets document title).\n- Uses `productsLoaded` as the loading guard for templates.\n- Uses integer minor-units for prices (for example cents), converts to\n  major-units only when sending analytics payloads.",
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "component": "categories-loader",
+      "description": "CategoriesLoader is a renderless data loader component for shop categories.\nIt loads categories from the backend and emits them through the `loaded` output.\n\n```html\n<categories-loader (loaded)=\"categories = $event\" />\n\n<loop [data]=\"categories\" let=\"category\">\n  <!-- render category -->\n</loop>\n```",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "loaded",
+          "type": "ShopSvcCategory[]",
+          "description": "Emits the loaded category list.",
+          "schemaRef": "ShopSvcCategory"
+        }
+      ]
+    },
+    {
+      "component": "custom-field-definition",
+      "description": "Headless helper component that allows templates to declare product custom field definitions.\n\nUsage:\n\n<custom-field-definition\n  definitions='[{\"fieldPath\":\"material\",\"name\":\"Material\",\"type\":\"string\"}]'\n/>\n\nOutcome:\n- Enables template authors to declaratively define custom product fields,\n  which then appear in the admin product edit form.",
+      "inputs": [
+        {
+          "name": "definitions",
+          "type": "ProductCustomFieldDefinition[] | ProductCustomFieldDefinition | string",
+          "description": "Custom field definitions to register for products.\n\nAccepts:\n- a single definition object\n- an array of definition objects\n- a JSON string containing either a single definition or an array\n\nSupported definition shape:\n- `fieldPath`: unique config path for the custom field\n- `name`: optional admin label\n- `type`: optional value type (`string`, `number`, `boolean`, `json`)\n\nInvalid or unparsable values are ignored.\nDefinitions already present in `products.customFieldDefinitions`\nare not duplicated.",
+          "schemaRef": "ProductCustomFieldDefinition | ProductCustomFieldDefinition | string"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "component": "editable-image",
+      "description": "EditableImage is the standard component for in-place editable images.\n\nUse this when the image should be both displayed and replaceable through the editor UI.\nIn edit mode, authorized users can click the image and swap it without changing template code.\nOutside edit mode, it behaves like a normal image display component.\n\nUnlike `ResponsiveImg` and `ResponsiveImgModal`, this component is content-backed:\nthe rendered image is resolved from `elementId`, so the same `elementId` can be reused\nin multiple places to keep those instances synchronized.\n\nIf no image has been configured yet, the component falls back to `placeholder`.\n\nExample:\n```\n<editable-image elementId=\"mainHeroImage\" />\n```\n\nRecommended with placeholder:\n```\n<editable-image\n  elementId=\"mainHeroImage\"\n  placeholder=\"https://images.example.com/hero-fallback.jpg\"\n/>\n```\n\nReusing the same image in multiple locations:\n```\n<editable-image elementId=\"brandLogo\" width=\"160\" height=\"160\" />\n<editable-image elementId=\"brandLogo\" width=\"48\" height=\"48\" />\n```",
+      "inputs": [
+        {
+          "name": "elementId",
+          "type": "string",
+          "description": "Unique content key for this editable image.\nThe component uses this ID to load and update the stored image asset.\n\nMultiple instances may intentionally share the same `elementId`\nto render the same image in different places or sizes.",
+          "schemaRef": null
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "description": "Preferred rendered width used for the default image URL and automatic srcset generation.",
+          "schemaRef": null
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "description": "Preferred rendered height used for the default image URL and proportional srcset generation.",
+          "schemaRef": null
+        },
+        {
+          "name": "quality",
+          "type": "number",
+          "description": "Controls the generated image quality for both `src` and `srcset` candidates.",
+          "schemaRef": null
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "description": "A fallback image used if no editable image is configured or if the primary source fails to load.\nProviding this is a best practice as it ensures:\n- Seamless template portability across different environments.\n- Transparent sourcing for easier image license verification.",
+          "schemaRef": null
+        },
+        {
+          "name": "modal",
+          "type": "boolean",
+          "description": "Enables the shared image modal instead of rendering the plain inline image.",
+          "schemaRef": null
+        },
+        {
+          "name": "sizes",
+          "type": "string | undefined",
+          "description": "Responsive slot sizes passed to the browser.\nDefaults to `(max-width: {width}px) 100vw, {width}px` when not provided.",
+          "schemaRef": "string | undefined"
+        },
+        {
+          "name": "widths",
+          "type": "number[] | undefined",
+          "description": "Optional list of candidate widths used to build `srcset`.\nLeave undefined for sensible defaults or pass an empty array to disable `srcset` entirely.",
+          "schemaRef": "number | undefined"
+        },
+        {
+          "name": "loading",
+          "type": "\"lazy\" | \"eager\"",
+          "description": "Native loading hint forwarded to the underlying `<img>`.",
+          "schemaRef": "\"lazy\" | \"eager\""
+        },
+        {
+          "name": "decoding",
+          "type": "\"async\" | \"sync\" | \"auto\"",
+          "description": "Native decoding hint forwarded to the underlying `<img>`.",
+          "schemaRef": "\"async\" | \"sync\" | \"auto\""
+        },
+        {
+          "name": "fetchPriority",
+          "type": "\"high\" | \"low\" | \"auto\"",
+          "description": "Native fetch priority hint forwarded to the underlying `<img>`.",
+          "schemaRef": "\"high\" | \"low\" | \"auto\""
+        },
+        {
+          "name": "styleKey",
+          "type": "string | undefined",
+          "description": "DEPRECATED. Will be removed.",
+          "schemaRef": "string | undefined"
+        },
+        {
+          "name": "defaultCss",
+          "type": "any",
+          "description": "DEPRECATED. Will be removed.",
+          "schemaRef": null
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "component": "editable-text",
+      "description": "EditableText is the canonical component for all text display across the platform.\nIt serves as the primary interface for dynamic, user-adjustable text content,\nallowing authorized users to modify text values directly through the UI in edit mode.\n```\n<editable-text elementId=\"mainHeroTitle\" placeholder=\"This does not really matter\" />\n```",
+      "inputs": [
+        {
+          "name": "placeholder",
+          "type": "any",
+          "description": "",
+          "schemaRef": null
+        },
+        {
+          "name": "elementId",
+          "type": "string",
+          "description": "The authoritative identifier for this component.\nThis ID is mandatory as it functions as the lookup key for the specific text asset data.\nNote: Multiple instances can share the same elementId to display and synchronize\nthe same text content across different parts of the UI.",
+          "schemaRef": null
+        },
+        {
+          "name": "styleKey",
+          "type": "string | undefined",
+          "description": "DEPRECATED. Will be removed.",
+          "schemaRef": "string | undefined"
+        },
+        {
+          "name": "defaultCss",
+          "type": "any",
+          "description": "DEPRECATED. Will be removed.",
+          "schemaRef": null
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "component": "free-tier-banner",
+      "description": "Simple informational banner shown on free-tier storefronts.\n\nThe component is static and translation-driven, intended for drop-in usage\nin DSL layouts wherever the plan/status notice should appear.",
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "component": "header-context",
+      "description": "Header context loads information into the template to enable you to\nimplement custom headers.\n```\n<header-context (loaded)=\"hdr = $event\" />\n\n<!-- Then somewhere down the line in your template -->\n<loop [data]=\"hdr.navigation.entries\" let=\"item\">\n  <a [href]=\"item.url\" class=\"honey1-nav-link\"><print [value]=\"item.title\" /></a>\n</loop>\n```",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "loaded",
+          "type": "HeaderContextState",
+          "description": "",
+          "schemaRef": "HeaderContextState"
+        }
+      ]
+    },
+    {
+      "component": "multiselect-filter-1",
+      "description": "Generic multi-select product filter component.\n\nRenders a list of checkbox options and emits a single `in` filter that can\nbe passed directly to product loading APIs.\n\n```html\n<multiselect-filter-1\n  fieldPath=\"customFields.material\"\n  [options]=\"['Cotton', 'Wool', 'Linen']\"\n  (changed)=\"filters = $event\"\n/>\n```\n\n- When no option is selected, emits an empty array.\n- Supports both plain string options and `{ label, value }` objects.\n- Styling is controlled through CSS variables defined in the component stylesheet.",
+      "inputs": [
+        {
+          "name": "fieldPath",
+          "type": "string",
+          "description": "Dot path used in the emitted filter.",
+          "schemaRef": null
+        },
+        {
+          "name": "heading",
+          "type": "string",
+          "description": "Heading rendered on top of the component.",
+          "schemaRef": null
+        },
+        {
+          "name": "options",
+          "type": "Array<string | MultiSelectFilterOption>",
+          "description": "Available options.\n\nAccepts either a string list (`['A', 'B']`) or explicit objects\n(`[{ label: 'A', value: 'a' }]`).",
+          "schemaRef": "string | MultiSelectFilterOption"
+        },
+        {
+          "name": "selected",
+          "type": "string[]",
+          "description": "Preselected values that should start checked.",
+          "schemaRef": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "changed",
+          "type": "ProductListFilter[]",
+          "description": "Emits API-ready filters on every selection change.",
+          "schemaRef": "ProductListFilter"
+        }
+      ]
+    },
+    {
+      "component": "my-orders-1",
+      "description": "Customer order history page component.\n\nLoads signed-in user's recent orders, enriches them with product/choice data,\nand exposes a \"reorder\" action that rehydrates the cart from a past order.",
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "component": "numeric-range-filter-1",
+      "description": "A generic numeric range filter component for product listings.",
+      "inputs": [
+        {
+          "name": "fieldPath",
+          "type": "string",
+          "description": "Dot-notated product field path (for example `customFields.width`).",
+          "schemaRef": null
+        },
+        {
+          "name": "min",
+          "type": "number | null",
+          "description": "Optional initial minimum value displayed in the minimum input.",
+          "schemaRef": "number | null"
+        },
+        {
+          "name": "max",
+          "type": "number | null",
+          "description": "Optional initial maximum value displayed in the maximum input.",
+          "schemaRef": "number | null"
+        },
+        {
+          "name": "heading",
+          "type": "string",
+          "description": "Optional visible heading shown above the filter controls.",
+          "schemaRef": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "changed",
+          "type": "ProductListFilter[]",
+          "description": "Emits the current filter list whenever range values change.",
+          "schemaRef": "ProductListFilter"
+        }
+      ]
+    },
+    {
+      "component": "place-order-1",
+      "description": "Checkout orchestrator for the storefront order flow.\n\nIt coordinates the multi-step DSL UI (form -> summary -> payment -> success),\nloads cart products/choices, prepares order payloads, and places orders using\nshop-svc.",
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "component": "product-loader",
+      "description": "ProductLoader is a renderless data loader component for a single shop product.\nIt resolves the product id from the current route, loads the product from the backend,\nand emits it through the `loaded` output.\n\n```html\n<product-loader (loaded)=\"product = $event\" />\n```\n\nIntended for product detail pages where the route contains a `product ID` param.",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "loaded",
+          "type": "ProductLoaderData | null",
+          "description": "",
+          "schemaRef": "ProductLoaderData | null"
+        }
+      ]
+    },
+    {
+      "component": "products-1",
+      "description": "Orchestrates the retrieval of product data with Hydration support.\n\n1. Checks `TransferState` for cached data to prevent double-fetching during hydration.\n2. Fetches active products from `shopSvcApi` based on the current hostname.\n3. Normalizes image dimensions to prevent **Cumulative Layout Shift (CLS)**.\n4. Synchronizes results with the `SearchService` for client-side filtering.",
+      "inputs": [
+        {
+          "name": "eagerCount",
+          "type": "number",
+          "description": "The number of product images to load immediately with high priority.\n*",
+          "schemaRef": null
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "",
+          "schemaRef": null
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "component": "products-loader",
+      "description": "ProductsLoader is a renderless data loader component for shop products.\nIt loads products from the backend and emits them through the `loaded` output.\n\n```html\n<products-loader (loaded)=\"products = $event\" />\n\n<loop [data]=\"products\" let=\"p\">\n  <!-- render product -->\n</loop>\n```\n\nIf `categoryId` is provided, it only loads products in that category.",
+      "inputs": [
+        {
+          "name": "categoryId",
+          "type": "string",
+          "description": "Optional category id filter.\nWhen set, only products from that category are loaded.",
+          "schemaRef": null
+        },
+        {
+          "name": "filters",
+          "type": "ProductListFilter[]",
+          "description": "Optional list of low-level ShopSvc filters.\nThese can be produced by dedicated filter components (range, multiselect, etc.).",
+          "schemaRef": "ProductListFilter"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "loaded",
+          "type": "ShopSvcProductExtended[]",
+          "description": "Emits the loaded product list.\nEmits an empty array if loading fails.",
+          "schemaRef": "ShopSvcProductExtended"
+        }
+      ]
+    },
+    {
+      "component": "search-1",
+      "description": "Search input element for product listing pages.\n\nEmits the current text query on each change and when cleared, so parent DSL\ncontainers can filter products reactively.",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "string",
+          "description": "",
+          "schemaRef": null
+        }
+      ]
+    },
+    {
+      "component": "if",
+      "description": "If is a visibility toggle that shows or hides content based on a specific condition.\nIt is commonly used to handle \"empty states,\" loading indicators, or gated features.\n```\n<if [condition]=\"items.length == 0\">\n  <div>No results found.</div>\n</if>\n\n<if not [condition]=\"items.length == 0\">\n  <div>Results found! <3</div>\n</if>\n```",
+      "inputs": [
+        {
+          "name": "condition",
+          "type": "boolean",
+          "description": "The primary evaluation criteria.\nWhen true, the children blocks are rendered to the DOM.",
+          "schemaRef": null
+        },
+        {
+          "name": "not",
+          "type": "any",
+          "description": "Inverts the condition logic.\nIf true, the component acts as an \"Unless\" toggle (renders only when condition is false).",
+          "schemaRef": null
+        },
+        {
+          "name": "childrenBlocks",
+          "type": "Block[]",
+          "description": "Ignore this.",
+          "schemaRef": "Block"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "component": "loop",
+      "description": "Loop is used to display a list of items by repeating a template for every entry in a collection.\nIt makes the data for the \"current\" item available to all components inside it using a custom name.\n```\n<loop [data]=\"products\" let=\"item\">\n <div>\n  Name: {{ item.name }}\n  Price: {{ item.cost }}\n </div>\n</loop>\n```",
+      "inputs": [
+        {
+          "name": "data",
+          "type": "any[]",
+          "description": "The collection of items to iterate over.\nCan be an array of objects, strings, or numbers.\nIf null/undefined, the loop handles it gracefully by rendering nothing.",
+          "schemaRef": null
+        },
+        {
+          "name": "alias",
+          "type": "string",
+          "description": "",
+          "schemaRef": null
+        },
+        {
+          "name": "height",
+          "type": "string | undefined",
+          "description": "The fixed height of the scroll container.\nSetting this value triggers `overflow: hidden` on the host and is\ntypically required for virtual scrolling to function correctly.",
+          "schemaRef": "string | undefined"
+        },
+        {
+          "name": "virtualize",
+          "type": "boolean",
+          "description": "Enables Virtual Scrolling (CDK).\nWhen true, only the items currently visible in the viewport are rendered.\nBest used with large datasets and a defined `height`.",
+          "schemaRef": null
+        },
+        {
+          "name": "childrenBlocks",
+          "type": "Block[]",
+          "description": "",
+          "schemaRef": "Block"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "component": "block",
+      "description": "Block defines a globally accessible UI fragment.\nOnce defined, this snippet is stored in a shared registry, making it\navailable for use across different pages or even entirely different\nwebsites within the platform. It serves as the single source of truth\nfor shared design patterns.\n```\n<block key=\"global-footer\">\n  <footer class=\"site-footer\">© 2024 Platform Inc.</footer>\n</block>\n```\nTo display the content of a block anywhere in your layout (even on other pages),\nuse the `<include />` component with the corresponding key:\n```xml\n<include src=\"global-footer\" />\n```",
+      "inputs": [
+        {
+          "name": "key",
+          "type": "string",
+          "description": "The unique identifier used to reference this snippet globally.",
+          "schemaRef": null
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "A friendly name for the block.\nThis title appears in the Snippet Explorer to help others identify the component.",
+          "schemaRef": null
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "A brief summary of the block's purpose.\nThis description is displayed in the Snippet Explorer to explain how the component should be used.",
+          "schemaRef": null
+        },
+        {
+          "name": "publish",
+          "type": "boolean",
+          "description": "* When enabled, this block is added to the Public Snippet Explorer\n(https://rikrol.com/snippets), allowing others to discover and use it.",
+          "schemaRef": null
+        },
+        {
+          "name": "display",
+          "type": "boolean",
+          "description": "Controls whether the block is visible at the location where it is defined.\nSet to 'false' if you only want to register the block without rendering it immediately.",
+          "schemaRef": null
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "component": "include",
+      "description": "Include pulls in a shared UI fragment from the global registry.\nIt can resolve blocks defined locally, on other pages, or from external \nsites, allowing you to build unified interfaces using pre-existing \ncomponents without duplicating code.\n```\n* <include src=\"shared-nav-menu\" />\n```\nTo include a block from a different website or project, prefix the source \nwith the target application ID followed by a colon:\n```xml\n<include src=\"app-1234:footer\" />\n```",
+      "inputs": [
+        {
+          "name": "src",
+          "type": "string",
+          "description": "Format: \"appId:templateId\" or just \"templateId\" (local)\nExample: \"system:navbar\" or \"my-custom-footer\"",
+          "schemaRef": null
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "component": "let",
+      "description": "Let is the state-initialization component for the DSL.\nIt allows developers to explicitly declare and initialize variables.\n```\n<let name=\"selectedCategory\" value=\"'all'\" />\n<let name=\"itemCount\" value=\"0\" />\n<let name=\"myArray\" value=\"[{'id': 1}, {'id': 2}]\" />\n```",
+      "inputs": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "The variable name the let statement sets",
+          "schemaRef": null
+        },
+        {
+          "name": "value",
+          "type": "any",
+          "description": "The value to be assigned to the variable.\nThis input supports:\n- **Literals**: Numbers (100) or Strings ('hello' or \"world\").\n- **Variable References**: Unquoted keys (e.g., `user.name`) are resolved to variables.\n- **Concatenation**: Combine values using `+` (e.g., `'Hello ' + firstName`).\n- **Comparisons**: Evaluates to boolean using `==` or `!=`.\n* *Note: While the DSL evaluates strings, you can also pass raw JS Objects/Arrays\ndirectly via Angular property binding [value]=\"{id: 1}\".*",
+          "schemaRef": null
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "component": "responsive-img",
+      "description": "ResponsiveImg is the standard display-only component for responsive images.\n\nUse this when an image should be rendered with generated `src` / `srcset`\nbut should not be editable through the CMS or editor UI.\n\nIt supports responsive sizing, loading hints, fallback placeholders,\nand common layout controls such as width, height, and object fit.\n\nExample:\n```\n<responsive-img\n  src=\"/upload/gallery-1.jpg\"\n  alt=\"Gallery image\"\n/>\n```",
+      "inputs": [
+        {
+          "name": "src",
+          "type": "string",
+          "description": "Source URL of the image.\nRequired input. Can be absolute or relative path, or file ID.",
+          "schemaRef": null
+        },
+        {
+          "name": "placeholder",
+          "type": "string | undefined",
+          "description": "A fallback image used if no editable image is configured or if the primary source fails to load.\nProviding this is a best practice as it ensures:\n- Seamless template portability across different environments.\n- Transparent sourcing for easier image license verification.",
+          "schemaRef": "string | undefined"
+        },
+        {
+          "name": "alt",
+          "type": "any",
+          "description": "Alternative text for accessibility.\nDefaults to empty string.",
+          "schemaRef": null
+        },
+        {
+          "name": "sizes",
+          "type": "string",
+          "description": "Value for the `sizes` attribute.\nDefines how the image should scale across viewport widths.\nDefaults to `\"100vw\"`.",
+          "schemaRef": null
+        },
+        {
+          "name": "quality",
+          "type": "number",
+          "description": "Image quality (typically 1–100).\nPassed to the responsive image service.\nDefaults to `80`.",
+          "schemaRef": null
+        },
+        {
+          "name": "widths",
+          "type": "number[] | undefined",
+          "description": "Array of widths used to generate responsive `srcset`.\nDefaults to predefined breakpoints.",
+          "schemaRef": "number | undefined"
+        },
+        {
+          "name": "loading",
+          "type": "\"eager\" | \"lazy\" | undefined",
+          "description": "Loading behavior of the image.\n`\"lazy\"` defers loading, `\"eager\"` loads immediately.",
+          "schemaRef": "\"eager\" | \"lazy\" | undefined"
+        },
+        {
+          "name": "decoding",
+          "type": "\"sync\" | \"async\" | \"auto\" | undefined",
+          "description": "Decoding hint for the browser.\n`\"async\"` (default), `\"sync\"`, or `\"auto\"`.",
+          "schemaRef": "\"sync\" | \"async\" | \"auto\" | undefined"
+        },
+        {
+          "name": "fetchPriority",
+          "type": "\"high\" | \"low\" | \"auto\" | undefined",
+          "description": "Fetch priority hint for the browser.\n`\"high\"`, `\"low\"`, or `\"auto\"`.",
+          "schemaRef": "\"high\" | \"low\" | \"auto\" | undefined"
+        },
+        {
+          "name": "width",
+          "type": "string | number | undefined",
+          "description": "Explicit width of the image.\nCan be a number (pixels) or any valid CSS size string.",
+          "schemaRef": "string | number | undefined"
+        },
+        {
+          "name": "height",
+          "type": "string | number | undefined",
+          "description": "Explicit height of the image.\nCan be a number (pixels) or any valid CSS size string.",
+          "schemaRef": "string | number | undefined"
+        },
+        {
+          "name": "maxWidth",
+          "type": "string | number | undefined",
+          "description": "Maximum width constraint.\nAccepts number (pixels) or CSS size string.",
+          "schemaRef": "string | number | undefined"
+        },
+        {
+          "name": "maxHeight",
+          "type": "string | number | undefined",
+          "description": "Maximum height constraint.\nAccepts number (pixels) or CSS size string.",
+          "schemaRef": "string | number | undefined"
+        },
+        {
+          "name": "objectFit",
+          "type": "string | undefined",
+          "description": "CSS `object-fit` value applied to the image.\nExample: `\"cover\"`, `\"contain\"`, `\"fill\"`, etc.",
+          "schemaRef": "string | undefined"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "component": "responsive-img-modal",
+      "description": "ResponsiveImgModal is a display-only image component with lightbox behavior.\n\nUse this when an image should render inline as a responsive preview\nand open into an interactive modal when clicked.\n\nThe modal supports zooming, rotation, and panning.\nThis component does not provide in-place editing.\n\nExample:\n```\n<responsive-img-modal\n  src=\"/upload/gallery-1.jpg\"\n  alt=\"Gallery image\"\n/>\n```",
+      "inputs": [
+        {
+          "name": "src",
+          "type": "string",
+          "description": "Source URL of the image.\nRequired input. Can be absolute or relative path, or file id.",
+          "schemaRef": null
+        },
+        {
+          "name": "alt",
+          "type": "string",
+          "description": "Alternative text for accessibility.\nDefaults to empty string.",
+          "schemaRef": null
+        },
+        {
+          "name": "width",
+          "type": "string | number | undefined",
+          "description": "Explicit width of the thumbnail image.\nAccepts number (pixels) or any valid CSS size string.",
+          "schemaRef": "string | number | undefined"
+        },
+        {
+          "name": "maxWidth",
+          "type": "string | undefined",
+          "description": "Maximum width constraint for the thumbnail or container.\nAccepts any valid CSS size string.",
+          "schemaRef": "string | undefined"
+        },
+        {
+          "name": "maxHeight",
+          "type": "string | undefined",
+          "description": "Maximum height constraint.\nAccepts number (pixels) or CSS size string.",
+          "schemaRef": "string | undefined"
+        },
+        {
+          "name": "fitContainer",
+          "type": "boolean | undefined",
+          "description": "Determines how the thumbnail fits within its container.\n`true` uses \"contain\", `false` uses \"cover\".\nDefaults to `true`.",
+          "schemaRef": "boolean | undefined"
+        },
+        {
+          "name": "sizes",
+          "type": "string",
+          "description": "Value for the `sizes` attribute of the responsive image.\nControls how the browser selects appropriate image sizes.\nDefaults to `\"100vw\"`.",
+          "schemaRef": null
+        },
+        {
+          "name": "quality",
+          "type": "number",
+          "description": "Image quality parameter (typically 1–100).\nPassed to image processing services.\nDefaults to `80`.",
+          "schemaRef": null
+        },
+        {
+          "name": "thumbnailWidths",
+          "type": "number[]",
+          "description": "Width breakpoints used to generate the responsive thumbnail `srcset`.\nDefaults to predefined thumbnail widths.",
+          "schemaRef": null
+        }
+      ],
+      "outputs": []
+    }
+  ],
+  "schemas": {
+    "ProductListFilter": {
+      "description": "",
+      "fields": [
+        {
+          "name": "op",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "valueJson",
+          "type": "string",
+          "description": ""
+        }
+      ],
+      "extends": null
+    },
+    "ShopSvcCategory": {
+      "description": "",
+      "fields": [
+        {
+          "name": "appId",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "createdAt",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique ID for this category."
+        },
+        {
+          "name": "internalId",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Display name (e.g. \"Beverages\", \"Pizza\")."
+        },
+        {
+          "name": "updatedAt",
+          "type": "string",
+          "description": ""
+        }
+      ],
+      "extends": null
+    },
+    "HeaderContextState": {
+      "description": "",
+      "fields": [
+        {
+          "name": "user",
+          "type": "HeaderContextUser",
+          "description": ""
+        },
+        {
+          "name": "navigation",
+          "type": "HeaderContextNavigation",
+          "description": ""
+        },
+        {
+          "name": "branding",
+          "type": "HeaderContextBranding",
+          "description": ""
+        },
+        {
+          "name": "selfLink",
+          "type": "string",
+          "description": ""
+        }
+      ],
+      "extends": null
+    },
+    "ShopSvcProductExtended": {
+      "description": "",
+      "fields": [
+        {
+          "name": "imageURL",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "pageURL",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "price",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "description": ""
+        }
+      ],
+      "extends": "ShopSvcProduct"
+    },
+    "Block": {
+      "description": "",
+      "fields": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "attrs",
+          "type": "Record<string, any>",
+          "description": ""
+        },
+        {
+          "name": "children",
+          "type": "Block[]",
+          "description": ""
+        },
+        {
+          "name": "rawContent",
+          "type": "string",
+          "description": ""
+        }
+      ],
+      "extends": null
+    },
+    "HeaderContextUser": {
+      "description": "",
+      "fields": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "isLoggedIn",
+          "type": "boolean",
+          "description": ""
+        },
+        {
+          "name": "isAdmin",
+          "type": "boolean",
+          "description": ""
+        }
+      ],
+      "extends": null
+    },
+    "HeaderContextNavigation": {
+      "description": "",
+      "fields": [
+        {
+          "name": "entries",
+          "type": "HeaderContextEntry[]",
+          "description": ""
+        },
+        {
+          "name": "currentPath",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "homeUrl",
+          "type": "string",
+          "description": ""
+        }
+      ],
+      "extends": null
+    },
+    "HeaderContextBranding": {
+      "description": "",
+      "fields": [
+        {
+          "name": "logoUrl",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "showLogo",
+          "type": "boolean",
+          "description": ""
+        }
+      ],
+      "extends": null
+    },
+    "ShopSvcProduct": {
+      "description": "",
+      "fields": [
+        {
+          "name": "appId",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "behavior",
+          "type": "ShopSvcBehavior",
+          "description": ""
+        },
+        {
+          "name": "categoryIds",
+          "type": "Array<string>",
+          "description": "References to categories this product belongs to"
+        },
+        {
+          "name": "choiceIds",
+          "type": "Array<string>",
+          "description": "References to choice groups"
+        },
+        {
+          "name": "createdAt",
+          "type": "string",
+          "description": "Timestamp when the product was created."
+        },
+        {
+          "name": "customFields",
+          "type": "{\n        [key: string]: any;\n    }",
+          "description": "Arbitrary JSON-like data for custom product fields."
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Short product description."
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique ID for this product."
+        },
+        {
+          "name": "imageFileIds",
+          "type": "Array<string>",
+          "description": ""
+        },
+        {
+          "name": "imageMetas",
+          "type": "Array<ShopSvcImageMeta>",
+          "description": ""
+        },
+        {
+          "name": "internalId",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "labels",
+          "type": "{\n        [key: string]: string;\n    }",
+          "description": "Structured flags or metadata\nArbitrary string key-value labels (e.g. \"coupon\": \"true\", \"category\": \"promo\")"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the product."
+        },
+        {
+          "name": "organizationId",
+          "type": "string",
+          "description": "Which organization posted the product"
+        },
+        {
+          "name": "organizationName",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "organizationThumbnailFileId",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "prices",
+          "type": "Array<ShopSvcPrice>",
+          "description": "Prices of the product.\nCan be multiple (like USD and Credits)."
+        },
+        {
+          "name": "sku",
+          "type": "string",
+          "description": "Optional SKU (Stock Keeping Unit) identifier.\ne.g. \"SKU12345\", \"PROD-001\""
+        },
+        {
+          "name": "sortOrder",
+          "type": "number",
+          "description": "Sorting order (lower number = higher priority)"
+        },
+        {
+          "name": "status",
+          "type": "ShopSvcProductStatus",
+          "description": ""
+        },
+        {
+          "name": "stock",
+          "type": "number",
+          "description": "nil for digital/unlimited"
+        },
+        {
+          "name": "tags",
+          "type": "Array<string>",
+          "description": "Free-form classification"
+        },
+        {
+          "name": "taxCode",
+          "type": "string",
+          "description": "e.g. \"food.takeout\", \"digital.service\""
+        },
+        {
+          "name": "unlimited",
+          "type": "boolean",
+          "description": "true for unlimited/digital products"
+        },
+        {
+          "name": "updatedAt",
+          "type": "string",
+          "description": "Timestamp when the product was last updated."
+        },
+        {
+          "name": "vatRate",
+          "type": "number",
+          "description": "e.g. 0.20 = 20% VAT"
+        },
+        {
+          "name": "weight",
+          "type": "number",
+          "description": "Product weight in grams."
+        }
+      ],
+      "extends": null
+    },
+    "HeaderContextEntry": {
+      "description": "",
+      "fields": [
+        {
+          "name": "key",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "url",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "isActive",
+          "type": "boolean",
+          "description": ""
+        }
+      ],
+      "extends": null
+    },
+    "ShopSvcBehavior": {
+      "description": "",
+      "fields": [],
+      "extends": null
+    },
+    "ShopSvcImageMeta": {
+      "description": "",
+      "fields": [
+        {
+          "name": "height",
+          "type": "number",
+          "description": ""
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "description": ""
+        }
+      ],
+      "extends": null
+    },
+    "ShopSvcPrice": {
+      "description": "",
+      "fields": [
+        {
+          "name": "amount",
+          "type": "number",
+          "description": "in smallest unit (e.g. cents)"
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "description": ""
+        }
+      ],
+      "extends": null
+    },
+    "ShopSvcProductStatus": {
+      "description": "",
+      "fields": [],
+      "extends": null
+    }
+  }
+}
