@@ -1,0 +1,17 @@
+{
+  "name": "dsl-compiler",
+  "version": "1.0.0",
+  "description": "A minimal DSL compiler MVP",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^4.3.6"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "vitest": "^1.5.0"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "components": [
+    {
+      "component": "card-component",
+      "inputs": [
+        { "name": "title", "type": "string", "required": true },
+        { "name": "count", "type": "number", "required": false },
+        { "name": "visible", "type": "boolean", "required": false }
+      ]
+    },
+    {
+      "component": "back-button-1",
+      "inputs": [
+        { "name": "fallbackUrl", "type": "any", "required": false },
+        { "name": "label", "type": "any", "required": false }
+      ]
+    }
+  ]
+}
