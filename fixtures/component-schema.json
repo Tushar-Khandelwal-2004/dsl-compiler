@@ -58,6 +58,19 @@
       "outputs": []
     },
     {
+      "component": "cart-button-1",
+      "description": "",
+      "inputs": [
+        {
+          "name": "type",
+          "type": "\"button\" | \"menu-item\"",
+          "description": "",
+          "schemaRef": "\"button\" | \"menu-item\""
+        }
+      ],
+      "outputs": []
+    },
+    {
       "component": "categories-loader",
       "description": "CategoriesLoader is a renderless data loader component for shop categories.\nIt loads categories from the backend and emits them through the `loaded` output.\n\n```html\n<categories-loader (loaded)=\"categories = $event\" />\n\n<loop [data]=\"categories\" let=\"category\">\n  <!-- render category -->\n</loop>\n```",
       "inputs": [],
@@ -200,7 +213,7 @@
       "outputs": []
     },
     {
-      "component": "free-tier-banner",
+      "component": "free-tier-banner-1",
       "description": "Simple informational banner shown on free-tier storefronts.\n\nThe component is static and translation-driven, intended for drop-in usage\nin DSL layouts wherever the plan/status notice should appear.",
       "inputs": [],
       "outputs": []
@@ -299,6 +312,19 @@
           "schemaRef": "ProductListFilter"
         }
       ]
+    },
+    {
+      "component": "open-icon-1",
+      "description": "",
+      "inputs": [
+        {
+          "name": "style",
+          "type": "any",
+          "description": "",
+          "schemaRef": null
+        }
+      ],
+      "outputs": []
     },
     {
       "component": "place-order-1",

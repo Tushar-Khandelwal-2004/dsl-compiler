@@ -1,72 +1,76 @@
 import { XMLParser } from 'fast-xml-parser';
 
 export interface ParsedNode {
-    tagName: string;
-    attributes: Record<string, string>;
-    line: number;
+  tagName: string;
+  attributes: Record<string, string>;
+  line: number;
 }
 
 export function parseDSL(source: string): ParsedNode[] {
-    const safeSource = source.replace(/=(\{[^}]+\})/g, '="$1"');
+  const safeSource = source.replace(/=(\{[^}]+\})/g, '="$1"');
 
-    const parser = new XMLParser({
-        ignoreAttributes: false,
-        attributeNamePrefix: "",
-        preserveOrder: true,
-    });
+  const parser = new XMLParser({
+    ignoreAttributes: false,
+    attributeNamePrefix: "",
+    preserveOrder: true,
+  });
 
-    let parsed: any[];
-    try {
-        parsed = parser.parse(safeSource);
-    } catch (error) {
-        return [];
+  let parsed: any[];
+  try {
+    parsed = parser.parse(safeSource);
+  } catch (error) {
+    return [];
+  }
+
+  const nodes: ParsedNode[] = [];
+  const lines = source.split('\n');
+  
+  const lineOccurrences = new Map<string, number[]>();
+  lines.forEach((line, i) => {
+    const tagRegex = /<([a-zA-Z][a-zA-Z0-9-]*)/g;
+    let match;
+    while ((match = tagRegex.exec(line)) !== null) {
+      const tag = match[1];
+      if (!lineOccurrences.has(tag)) lineOccurrences.set(tag, []);
+      lineOccurrences.get(tag)!.push(i + 1);
     }
+  });
 
-    const nodes: ParsedNode[] = [];
-    const lines = source.split('\n');
-    let currentLineSearchStart = 0;
+  function getNextLine(tagName: string): number {
+    const tagLines = lineOccurrences.get(tagName);
+    return tagLines && tagLines.length > 0 ? tagLines.shift()! : 1;
+  }
 
-    function findLine(tagName: string): number {
-        const searchStr = `<${tagName}`;
-        for (let i = currentLineSearchStart; i < lines.length; i++) {
-            if (lines[i].includes(searchStr)) {
-                currentLineSearchStart = i;
-                return i + 1;
-            }
+  function walk(items: any[]) {
+    if (!Array.isArray(items)) return;
+
+    for (const item of items) {
+      const keys = Object.keys(item);
+      
+      for (const key of keys) {
+        if (key === ':@' || key === '#text' || key.startsWith('?')) continue;
+
+        const tagName = key;
+        const rawAttributes = item[':@'] || {};
+        
+        const attributes: Record<string, string> = {};
+        for (const [attrName, attrValue] of Object.entries(rawAttributes)) {
+          attributes[attrName] = String(attrValue);
         }
-        return 1;
-    }
 
-    function walk(items: any[]) {
-        if (!Array.isArray(items)) return;
+        nodes.push({
+          tagName,
+          attributes,
+          line: getNextLine(tagName)
+        });
 
-        for (const item of items) {
-            const keys = Object.keys(item);
-
-            for (const key of keys) {
-                if (key === ':@' || key === '#text') continue;
-
-                const tagName = key;
-                const rawAttributes = item[':@'] || {};
-
-                const attributes: Record<string, string> = {};
-                for (const [attrName, attrValue] of Object.entries(rawAttributes)) {
-                    attributes[attrName] = String(attrValue);
-                }
-
-                nodes.push({
-                    tagName,
-                    attributes,
-                    line: findLine(tagName)
-                });
-
-                if (Array.isArray(item[tagName])) {
-                    walk(item[tagName]);
-                }
-            }
+        if (Array.isArray(item[tagName])) {
+          walk(item[tagName]);
         }
+      }
     }
+  }
 
-    walk(parsed);
-    return nodes;
+  walk(parsed);
+  return nodes;
 }

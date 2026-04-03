@@ -12,9 +12,15 @@ export interface ComponentInput {
   required?: boolean;
 }
 
+export interface ComponentOutput {
+  name: string;
+  type: string;
+}
+
 export interface ComponentSchema {
   component: string;
   inputs: ComponentInput[];
+  outputs?: ComponentOutput[];
 }
 
 export interface RawSchema {
