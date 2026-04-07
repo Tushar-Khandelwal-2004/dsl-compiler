@@ -4,6 +4,8 @@ export interface ParsedNode {
   tagName: string;
   attributes: Record<string, string>;
   line: number;
+  colStart: number;
+  colEnd: number;
 }
 
 export function parseDSL(source: string): ParsedNode[] {
@@ -11,58 +13,61 @@ export function parseDSL(source: string): ParsedNode[] {
 
   const parser = new XMLParser({
     ignoreAttributes: false,
-    attributeNamePrefix: "",
+    attributeNamePrefix: '',
     preserveOrder: true,
   });
 
   let parsed: any[];
   try {
     parsed = parser.parse(safeSource);
-  } catch (error) {
+  } catch {
     return [];
   }
 
   const nodes: ParsedNode[] = [];
   const lines = source.split('\n');
-  
-  const lineOccurrences = new Map<string, number[]>();
-  lines.forEach((line, i) => {
+
+  // Pre-scan: for each tag name, record every position it appears at in order
+  const occurrences = new Map<string, Array<{ line: number; colStart: number; colEnd: number }>>();
+
+  lines.forEach((lineText, i) => {
     const tagRegex = /<([a-zA-Z][a-zA-Z0-9-]*)/g;
     let match;
-    while ((match = tagRegex.exec(line)) !== null) {
+    while ((match = tagRegex.exec(lineText)) !== null) {
       const tag = match[1];
-      if (!lineOccurrences.has(tag)) lineOccurrences.set(tag, []);
-      lineOccurrences.get(tag)!.push(i + 1);
+      // match.index is the position of '<', so tag name starts one after that
+      // +1 converts to 1-based column, another +1 skips the '<' character
+      const colStart = match.index + 2;
+      const colEnd = colStart + tag.length;
+      if (!occurrences.has(tag)) occurrences.set(tag, []);
+      occurrences.get(tag)!.push({ line: i + 1, colStart, colEnd });
     }
   });
 
-  function getNextLine(tagName: string): number {
-    const tagLines = lineOccurrences.get(tagName);
-    return tagLines && tagLines.length > 0 ? tagLines.shift()! : 1;
+  function getNextOccurrence(tagName: string) {
+    const list = occurrences.get(tagName);
+    return list && list.length > 0
+      ? list.shift()!
+      : { line: 1, colStart: 1, colEnd: 1 + tagName.length };
   }
 
   function walk(items: any[]) {
     if (!Array.isArray(items)) return;
 
     for (const item of items) {
-      const keys = Object.keys(item);
-      
-      for (const key of keys) {
+      for (const key of Object.keys(item)) {
         if (key === ':@' || key === '#text' || key.startsWith('?')) continue;
 
         const tagName = key;
         const rawAttributes = item[':@'] || {};
-        
+
         const attributes: Record<string, string> = {};
         for (const [attrName, attrValue] of Object.entries(rawAttributes)) {
           attributes[attrName] = String(attrValue);
         }
 
-        nodes.push({
-          tagName,
-          attributes,
-          line: getNextLine(tagName)
-        });
+        const { line, colStart, colEnd } = getNextOccurrence(tagName);
+        nodes.push({ tagName, attributes, line, colStart, colEnd });
 
         if (Array.isArray(item[tagName])) {
           walk(item[tagName]);

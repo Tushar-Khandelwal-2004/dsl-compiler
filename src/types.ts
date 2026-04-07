@@ -4,6 +4,13 @@ export interface Diagnostic {
   severity: DiagnosticSeverity;
   message: string;
   line: number;
+  colStart: number;
+  colEnd: number;
+}
+
+export interface CompilationResult {
+  errors: Diagnostic[];
+  warnings: Diagnostic[];
 }
 
 export interface ComponentInput {
